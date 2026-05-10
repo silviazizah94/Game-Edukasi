@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive GDD: Petualangan Sholat Hebat</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: '#2ECC71',
+                        'emerald-dark': '#27AE60',
+                        skyblue: '#3498DB',
+                        gold: '#F1C40F',
+                        'gold-dark': '#D4AF37',
+                        light: '#F8F9FA',
+                        dark: '#2D3748'
+                    },
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F8F9FA; color: #2D3748; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(241, 196, 15, 0.3);
+            box-shadow: 0 4px 6px rgba(46, 204, 113, 0.1);
+            border-radius: 1rem;
+        }
+        .glow-emerald { box-shadow: 0 0 15px rgba(46, 204, 113, 0.5); }
+        .glow-gold { box-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 450px;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container { height: 400px; }
+        }
+
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .accordion-content { transition: max-height 0.3s ease-out, padding 0.3s ease; max-height: 0; overflow: hidden; padding-top: 0; padding-bottom: 0; }
+        .accordion-active .accordion-content { max-height: 1000px; padding-top: 1rem; padding-bottom: 1rem; }
+    </style>
+
+    <!-- Chosen Palette: Emerald Green (#2ECC71), Sky Blue (#3498DB), Islamic Gold (#F1C40F), Pure White (#FFFFFF), Light Gray (#F8F9FA) -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive pitch deck for the "Petualangan Sholat Hebat" GDD. It uses a single-page scrolling layout with distinct thematic sections (Overview, Visual Identity, Interactive Level Map, Gamification Stats, and Technical/Prompt Details). This structure allows stakeholders (developers, artists, educators) to quickly grasp the game's concept, explore the curriculum mapped to game zones interactively, and understand the progression mechanics via a dynamic chart, ensuring the heavy text of the GDD is easily digestible. -->
+    <!-- Visualization & Content Choices: 
+         1. Color Palette -> Goal: Inform -> Interactive Color Swatches -> Click to copy HEX -> Enhances developer UX. 
+         2. Game Zones & Levels -> Goal: Organize/Explore -> Interactive Tab/List View -> Click zone to see specific levels -> Prevents overwhelming text walls. 
+         3. XP & Progression System -> Goal: Compare/Inform -> Bar Chart (Chart.js) -> Hover for tooltips -> Visualizes the balancing of the game's leveling system. 
+         4. AI Prompts -> Goal: Organize -> Accordions -> Click to expand -> Keeps technical details hidden until needed. 
+         - Libraries used: Chart.js. Confirming NO SVG/Mermaid used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="font-sans antialiased text-dark scroll-smooth">
+
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-emerald/20 rounded-none">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <span class="text-2xl">🕌</span>
+                    <span class="font-heading font-bold text-emerald-dark text-lg sm:text-xl tracking-tight">Akademi Sholat</span>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#overview" class="text-sm font-semibold hover:text-emerald transition-colors">Overview</a>
+                    <a href="#visuals" class="text-sm font-semibold hover:text-emerald transition-colors">Visuals</a>
+                    <a href="#levels" class="text-sm font-semibold hover:text-emerald transition-colors">Level Map</a>
+                    <a href="#gamification" class="text-sm font-semibold hover:text-emerald transition-colors">Sistem Reward</a>
+                    <a href="#tech" class="text-sm font-semibold hover:text-emerald transition-colors">Aset & Tech</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="pt-28 pb-16 px-4 bg-gradient-to-b from-emerald/10 to-transparent">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="font-heading font-extrabold text-4xl sm:text-5xl md:text-6xl text-emerald-dark mb-6 tracking-tight">
+                Petualangan Sholat Hebat
+            </h1>
+            <p class="text-xl md:text-2xl text-dark/80 mb-8 font-light">
+                Game Edukasi Interaktif Fiqih Sholat (Safinatun Najah) untuk Anak SMP/MTs.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <span class="px-4 py-2 bg-white rounded-full border border-emerald/30 shadow-sm font-semibold text-sm">🎮 Casual RPG Puzzle</span>
+                <span class="px-4 py-2 bg-white rounded-full border border-emerald/30 shadow-sm font-semibold text-sm">📱 Android Offline APK</span>
+                <span class="px-4 py-2 bg-white rounded-full border border-emerald/30 shadow-sm font-semibold text-sm">👦 Usia 12-15 Tahun</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 space-y-24">
+
+        <section id="overview" class="scroll-mt-24">
+            <div class="mb-8 text-center max-w-3xl mx-auto">
+                <h2 class="font-heading text-3xl font-bold text-emerald-dark mb-4">Misi Utama Game</h2>
+                <p class="text-lg leading-relaxed">
+                    Bagian ini menjelaskan esensi dari "Petualangan Sholat Hebat". Aplikasi ini dirancang tidak hanya untuk menguji, tetapi juga untuk <strong>mengajarkan</strong> materi fiqih sholat dengan pendekatan yang relevan bagi Gen-Z. Interaksi di sini memberikan gambaran cepat tentang flow pengguna.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-panel p-6 text-center hover:glow-emerald transition-shadow duration-300">
+                    <div class="text-4xl mb-4">📖</div>
+                    <h3 class="font-heading font-bold text-lg mb-2">Materi Otentik</h3>
+                    <p class="text-sm text-dark/70">Berdasarkan kitab Safinatun Najah meliputi wudhu, tayamum, syarat, rukun, hingga sujud sahwi.</p>
+                </div>
+                <div class="glass-panel p-6 text-center hover:glow-gold transition-shadow duration-300">
+                    <div class="text-4xl mb-4">🕹️</div>
+                    <h3 class="font-heading font-bold text-lg mb-2">Interaksi Beragam</h3>
+                    <p class="text-sm text-dark/70">Mini games seperti drag & drop, puzzle gerakan, dan simulasi troubleshooting kesalahan sholat.</p>
+                </div>
+                <div class="glass-panel p-6 text-center hover:glow-emerald transition-shadow duration-300">
+                    <div class="text-4xl mb-4">🏆</div>
+                    <h3 class="font-heading font-bold text-lg mb-2">Sistem Evaluasi</h3>
+                    <p class="text-sm text-dark/70">Reward koin, energi petir, dan quotes motivasi untuk membangun semangat belajar.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="visuals" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="font-heading text-3xl font-bold text-emerald-dark mb-4">Identitas Visual</h2>
+                <p class="text-lg leading-relaxed max-w-4xl">
+                    Visual game sangat menentukan ketertarikan anak SMP. Bagian ini merangkum arahan seni (art direction) yang menggabungkan elemen islami elegan dengan UI modern. Klik pada kartu warna untuk menyalin kode HEX-nya.
+                </p>
+            </div>
+
+            <div class="glass-panel p-8">
+                <h3 class="font-heading font-semibold text-xl mb-4">Color Palette</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="color-palette-container">
+                </div>
+                
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-heading font-semibold text-xl mb-4">Typography</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-white rounded-lg border border-gray-100">
+                                <div class="font-heading font-bold text-2xl mb-1">Montserrat</div>
+                                <div class="text-sm text-dark/60">Header & UI Elements (Tegas & Modern)</div>
+                            </div>
+                            <div class="p-4 bg-white rounded-lg border border-gray-100">
+                                <div class="font-sans text-xl mb-1">Nunito</div>
+                                <div class="text-sm text-dark/60">Body Text & Dialog (Ramah & Terbaca)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-heading font-semibold text-xl mb-4">UI Style Target</h3>
+                        <div class="p-6 bg-emerald/5 rounded-xl border-2 border-emerald/20 glow-emerald text-center h-full flex flex-col justify-center items-center">
+                            <button class="px-8 py-3 bg-gradient-to-r from-emerald to-emerald-dark text-white font-bold rounded-xl shadow-[0_0_15px_rgba(46,204,113,0.5)] hover:scale-105 transition-transform mb-3">
+                                Mulai Bermain
+                            </button>
+                            <p class="text-xs text-dark/60 font-semibold">Glassmorphism + Glowing Edges + Rounded Corners</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="levels" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="font-heading text-3xl font-bold text-emerald-dark mb-4">Peta Kurikulum (Level Map)</h2>
+                <p class="text-lg leading-relaxed max-w-4xl">
+                    Kurikulum pembelajaran dipecah menjadi 5 Zona interaktif. Silakan pilih zona di bawah ini untuk melihat detail level, materi, dan mode gameplay yang dirancang untuk masing-masing zona.
+                </p>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="w-full lg:w-1/3 flex flex-col gap-3" id="zone-list">
+                </div>
+                
+                <div class="w-full lg:w-2/3">
+                    <div class="glass-panel p-6 h-full border-l-4 border-l-gold" id="zone-details">
+                        <div class="flex items-center justify-center h-64 text-dark/40 font-semibold text-lg">
+                            Pilih zona di sebelah kiri untuk melihat detail level.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gamification" class="scroll-mt-24">
+            <div class="mb-8 text-center max-w-3xl mx-auto">
+                <h2 class="font-heading text-3xl font-bold text-emerald-dark mb-4">Sistem Reward & Progresi</h2>
+                <p class="text-lg leading-relaxed">
+                    Bagian ini memvisualisasikan sistem Experience (XP) dan Gelar yang akan diraih pemain. Interaksi visual ini membantu developer menyeimbangkan tingkat kesulitan dan durasi bermain.
+                </p>
+            </div>
+
+            <div class="glass-panel p-6 md:p-8">
+                <div class="flex flex-wrap justify-center gap-8 mb-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center text-2xl shadow-inner">⚡</div>
+                        <div>
+                            <div class="font-bold text-lg">Energi (Maks 20)</div>
+                            <div class="text-sm text-dark/60">Biaya: 2/Level</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-skyblue/20 flex items-center justify-center text-2xl shadow-inner">🪙</div>
+                        <div>
+                            <div class="font-bold text-lg">Koin Emas</div>
+                            <div class="text-sm text-dark/60">Untuk Avatar Shop</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-emerald/20 flex items-center justify-center text-2xl shadow-inner">⭐</div>
+                        <div>
+                            <div class="font-bold text-lg">Sistem Bintang</div>
+                            <div class="text-sm text-dark/60">Nilai A-E per Level</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="xpChart"></canvas>
+                </div>
+                <p class="text-center text-sm text-dark/50 mt-4 italic">Visualisasi estimasi XP Kumulatif yang dibutuhkan untuk mencapai Gelar (Trophy) baru.</p>
+            </div>
+        </section>
+
+        <section id="tech" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="font-heading text-3xl font-bold text-emerald-dark mb-4">Aset & Spesifikasi Teknis</h2>
+                <p class="text-lg leading-relaxed max-w-4xl">
+                    Informasi teknis dan library prompt AI yang siap di-copy-paste untuk mempercepat produksi game menggunakan AI Builder atau tim art/sound.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="font-heading font-semibold text-xl mb-4 text-emerald-dark border-b border-emerald/20 pb-2">Spesifikasi Engine</h3>
+                    <ul class="space-y-3 font-sans">
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald">✔</span> <strong>Engine:</strong> Unity 2D / Construct 3 (Optimal kompresi APK).
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald">✔</span> <strong>Database:</strong> Local JSON / SQLite. Tanpa server.
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald">✔</span> <strong>Optimasi:</strong> Audio `.ogg`, Sprite Sheet Atlas, Asset 720p/1080p scaled.
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald">✔</span> <strong>Target Size:</strong> &lt; 80 MB.
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-emerald">✔</span> <strong>Keamanan:</strong> Enkripsi Base64 sederhana untuk save data.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="space-y-3" id="accordion-container">
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-dark text-white py-8 text-center border-t-4 border-gold mt-12">
+        <p class="font-heading font-semibold text-lg mb-2 tracking-widest">AKADEMI SHOLAT</p>
+        <p class="text-sm text-white/50">Interactive Game Design Document</p>
+    </footer>
+
+    <script>
+        const colors = [
+            { name: 'Emerald', hex: '#2ECC71', text: 'white' },
+            { name: 'Sky Blue', hex: '#3498DB', text: 'white' },
+            { name: 'Islamic Gold', hex: '#F1C40F', text: 'dark' },
+            { name: 'Pure White', hex: '#FFFFFF', text: 'dark', border: true }
+        ];
+
+        const colorContainer = document.getElementById('color-palette-container');
+        colors.forEach(c => {
+            const div = document.createElement('div');
+            div.className = `p-6 rounded-xl cursor-pointer transform hover:-translate-y-1 transition-all duration-200 flex flex-col items-center justify-center gap-2 ${c.border ? 'border border-gray-200' : 'shadow-md'}`;
+            div.style.backgroundColor = c.hex;
+            div.style.color = c.text === 'white' ? '#fff' : '#2D3748';
+            div.innerHTML = `
+                <span class="font-bold font-heading text-lg">${c.name}</span>
+                <span class="font-mono text-sm opacity-80">${c.hex}</span>
+                <span class="text-xs opacity-0 transition-opacity duration-200 mt-1 absolute bottom-2" id="msg-${c.hex.replace('#','')}">Copied!</span>
+            `;
+            
+            div.addEventListener('click', () => {
+                navigator.clipboard.writeText(c.hex).then(() => {
+                    const msg = document.getElementById(`msg-${c.hex.replace('#','')}`);
+                    msg.classList.remove('opacity-0');
+                    setTimeout(() => msg.classList.add('opacity-0'), 1500);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+            });
+            colorContainer.appendChild(div);
+        });
+
+        const zonesData = [
+            {
+                id: 1,
+                name: "Zona 1: Dasar Kesucian",
+                location: "Taman Akademi 🌳",
+                levels: [
+                    { num: 1, title: "Pembagian Najis", desc: "Mukhaffafah, Mutawassithah, Mughalladhah.", mode: "Drag & Drop (Pisahkan jenis & cara suci)" },
+                    { num: 2, title: "6 Fardhu Wudhu", desc: "Niat hingga Tertib.", mode: "Puzzle Urutan Gambar" },
+                    { num: 3, title: "Batal Wudhu", desc: "Hal-hal yang membatalkan wudhu.", mode: "Swipe Kanan/Kiri" },
+                    { num: 4, title: "Tayamum", desc: "Syarat dan rukun tayamum.", mode: "Simulasi Tepuk & Usap" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Zona 2: Persiapan Menghadap",
+                location: "Ruang Kelas 🏫",
+                levels: [
+                    { num: 5, title: "8 Syarat Sah Sholat", desc: "Suci, menutup aurat, menghadap kiblat, dll.", mode: "Cari Kata / Pilihan Ganda" },
+                    { num: 6, title: "Waktu Sholat", desc: "Masuknya waktu sholat 5 waktu.", mode: "Cocokkan Jam/Langit" }
+                ]
+            },
+            {
+                id: 3,
+                name: "Zona 3: Inti Ibadah",
+                location: "Aula Latihan 🥋",
+                levels: [
+                    { num: 7, title: "17 Rukun Sholat", desc: "Qawli (Ucapan) dan Fi'li (Gerakan).", mode: "Klasifikasi / Grouping" },
+                    { num: 8, title: "Syarat Sujud", desc: "7 anggota badan menempel lantai.", mode: "Tap Area Karakter" },
+                    { num: 9, title: "Tuma'ninah", desc: "Ketenangan dalam gerakan.", mode: "Rhythm/Timing Game" }
+                ]
+            },
+            {
+                id: 4,
+                name: "Zona 4: Kesempurnaan",
+                location: "Lorong Masjid 🏛️",
+                levels: [
+                    { num: 10, title: "Sunnah Sholat", desc: "Ab'adl & Hai'at.", mode: "Kuis Cepat Tepat" },
+                    { num: 11, title: "Sujud Sahwi", desc: "Studi kasus lupa gerakan/sunnah.", mode: "Pilihan Keputusan (Case Study)" },
+                    { num: 12, title: "Jamaah", desc: "Posisi Imam dan Makmum.", mode: "Drag & Drop Posisi Saf" }
+                ]
+            },
+            {
+                id: 5,
+                name: "Zona 5: Ujian Akhir",
+                location: "Masjid Utama 🕌 (BOSS LEVEL)",
+                levels: [
+                    { num: "BOSS", title: "Simulasi Sholat Lengkap", desc: "Menyusun gerakan Takbir hingga Salam.", mode: "Interactive Sequence" },
+                    { num: "BOSS", title: "Troubleshooting", desc: "AI melakukan kesalahan gerakan.", mode: "Time-limit Correction (Tap 'Koreksi')" }
+                ],
+                isBoss: true
+            }
+        ];
+
+        const zoneList = document.getElementById('zone-list');
+        const zoneDetails = document.getElementById('zone-details');
+
+        function renderZoneDetails(zoneId) {
+            const zone = zonesData.find(z => z.id === zoneId);
+            if (!zone) return;
+
+            document.querySelectorAll('.zone-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald', 'text-white', 'shadow-md', 'scale-105');
+                btn.classList.add('bg-white', 'text-dark');
+            });
+            const activeBtn = document.getElementById(`zone-btn-${zoneId}`);
+            activeBtn.classList.remove('bg-white', 'text-dark');
+            activeBtn.classList.add('bg-emerald', 'text-white', 'shadow-md', 'scale-105');
+
+            let html = `
+                <div class="mb-6 flex justify-between items-start">
+                    <div>
+                        <h3 class="font-heading font-bold text-2xl ${zone.isBoss ? 'text-gold-dark' : 'text-emerald-dark'}">${zone.name}</h3>
+                        <p class="text-dark/70 font-semibold mt-1 flex items-center gap-2">📍 Latar: ${zone.location}</p>
+                    </div>
+                    ${zone.isBoss ? '<span class="px-3 py-1 bg-gold text-white text-xs font-bold rounded-full animate-pulse">BOSS LEVEL</span>' : ''}
+                </div>
+                <div class="space-y-4">
+            `;
+
+            zone.levels.forEach(lvl => {
+                html += `
+                    <div class="p-4 rounded-lg bg-light border border-gray-200 hover:border-emerald/50 transition-colors">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="w-8 h-8 rounded-full bg-emerald/20 text-emerald-dark flex items-center justify-center font-bold text-sm">${lvl.num}</span>
+                            <h4 class="font-bold text-lg">${lvl.title}</h4>
+                        </div>
+                        <p class="text-sm text-dark/70 mb-2 pl-11">${lvl.desc}</p>
+                        <div class="pl-11">
+                            <span class="inline-block px-2 py-1 bg-skyblue/10 text-skyblue rounded text-xs font-semibold">🎮 ${lvl.mode}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            zoneDetails.innerHTML = html;
+        }
+
+        zonesData.forEach(zone => {
+            const btn = document.createElement('button');
+            btn.id = `zone-btn-${zone.id}`;
+            btn.className = `zone-btn w-full text-left px-5 py-4 rounded-xl font-bold transition-all duration-300 border border-gray-100 flex items-center justify-between ${zone.isBoss ? 'border-l-4 border-l-gold' : ''}`;
+            btn.innerHTML = `<span>${zone.name}</span> <span class="text-xl">${zone.isBoss ? '👑' : '▶'}</span>`;
+            btn.onclick = () => renderZoneDetails(zone.id);
+            zoneList.appendChild(btn);
+        });
+
+        renderZoneDetails(1);
+
+        const ctx = document.getElementById('xpChart').getContext('2d');
+        const xpChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Santri Baru', 'Pencari Ilmu', 'Ahli Wudhu', 'Pejuang Saf', 'Master Sholat'],
+                datasets: [{
+                    label: 'Kumulatif XP Dibutuhkan',
+                    data: [0, 500, 1500, 3500, 6000],
+                    backgroundColor: [
+                        'rgba(248, 249, 250, 0.8)', 
+                        'rgba(52, 152, 219, 0.8)',  
+                        'rgba(46, 204, 113, 0.8)',  
+                        'rgba(39, 174, 96, 0.8)',   
+                        'rgba(241, 196, 15, 0.9)'   
+                    ],
+                    borderColor: [
+                        '#CBD5E0',
+                        '#2980B9',
+                        '#27AE60',
+                        '#1E8449',
+                        '#D4AF37'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(45, 55, 72, 0.9)',
+                        titleFont: { family: 'Montserrat', size: 14 },
+                        bodyFont: { family: 'Nunito', size: 13 },
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return ` Dibutuhkan: ${context.parsed.y} XP`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+                        ticks: { font: { family: 'Nunito' } },
+                        title: { display: true, text: 'Experience Points (XP)', font: { family: 'Montserrat', weight: 'bold' } }
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { font: { family: 'Montserrat', weight: 'bold' } }
+                    }
+                }
+            }
+        });
+
+        const promptsData = [
+            {
+                title: "🎨 Image Gen Prompts (Midjourney/DALL-E)",
+                content: `
+                    <strong>Background Akademi:</strong> <code>2D vector art, background of a modern Islamic junior high school, beautiful garden, bright sunny day, emerald green and white palette, clear sky, flat design, modern UI game background, high quality, 8k --ar 16:9</code><br><br>
+                    <strong>Karakter Mentor:</strong> <code>2d game asset, portrait of a friendly young male Islamic teacher wearing neat casual clothes and black peci, smiling warmly, anime style crossed with modern vector illustration, transparent background --ar 3:4</code>
+                `
+            },
+            {
+                title: "🎵 Audio & Voice Prompts (Suno/ElevenLabs)",
+                content: `
+                    <strong>BGM Main Menu:</strong> <code>Upbeat modern Islamic lo-fi instrumental, acoustic guitar, soft tambourine, no vocals, peaceful, inspiring, study music, 120 bpm.</code><br><br>
+                    <strong>Voice Over (Mentor):</strong> <code>"Luar biasa! Jawabanmu tepat." (Intonasi semangat, ramah, bahasa Indonesia).</code>
+                `
+            },
+            {
+                title: "🎬 Kebutuhan Animasi (Spine 2D)",
+                content: `
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>Idle Character: Nafas naik turun, mata berkedip.</li>
+                        <li>Takbiratul Ihram: Posisi tangan sejajar telinga/bahu.</li>
+                        <li>Ruku': Punggung lurus.</li>
+                        <li>Sujud: Dahi, hidung, telapak tangan, lutut, jari kaki menempel.</li>
+                    </ul>
+                `
+            }
+        ];
+
+        const accordionContainer = document.getElementById('accordion-container');
+        promptsData.forEach((item, index) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'glass-panel overflow-hidden border border-gray-200';
+            
+            const btn = document.createElement('button');
+            btn.className = 'w-full px-5 py-4 text-left font-bold font-heading flex justify-between items-center hover:bg-emerald/5 transition-colors focus:outline-none';
+            btn.innerHTML = `<span>${item.title}</span> <span class="text-xl transform transition-transform duration-300 icon">+</span>`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'accordion-content px-5 bg-white/50 text-sm border-t border-gray-100 leading-relaxed';
+            contentDiv.innerHTML = item.content;
+
+            btn.onclick = () => {
+                const isActive = wrapper.classList.contains('accordion-active');
+                document.querySelectorAll('#accordion-container > div').forEach(w => {
+                    w.classList.remove('accordion-active');
+                    w.querySelector('.icon').textContent = '+';
+                    w.querySelector('.icon').style.transform = 'rotate(0deg)';
+                });
+
+                if (!isActive) {
+                    wrapper.classList.add('accordion-active');
+                    btn.querySelector('.icon').textContent = '×';
+                    btn.querySelector('.icon').style.transform = 'rotate(90deg)';
+                }
+            };
+
+            wrapper.appendChild(btn);
+            wrapper.appendChild(contentDiv);
+            accordionContainer.appendChild(wrapper);
+        });
+
+    </script>
+</body>
+</html>
